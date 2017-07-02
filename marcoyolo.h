@@ -7,6 +7,7 @@
 #define MAP_SIZE_X 60
 #define MAP_SIZE_Y 20
 #define T_PAUSE 200000000L
+#define COLOR_NULL 0 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,7 @@
 #include <string.h>
 #include <time.h>
 
-typedef struct s_map {
+struct s_map {
   int ground[MAP_SIZE_X][MAP_SIZE_Y];
   int color[MAP_SIZE_X][MAP_SIZE_Y];
   int next_color;

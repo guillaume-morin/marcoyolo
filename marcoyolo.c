@@ -21,7 +21,7 @@ int init(struct s_map *map) {
     for (x=0;x<MAP_SIZE_X;x++) {
         for (y=0;y<MAP_SIZE_Y;y++) {
             map->ground[x][y]=rand()%3;
-            map->color[x][y]=0;
+            map->color[x][y]=COLOR_NULL;
         }
     }
     map->next_color=30;
@@ -47,7 +47,7 @@ int display(struct s_map *map) {
 
     if (nanosleep(&pause,NULL) < 0) {
         printf("Error : syscall nanosleep failed.\n");
-        abort;
+        exit(1);
     }
 
     return 0;
@@ -57,15 +57,16 @@ int browse(struct s_map *map) {
     int x,y;
     for (y=0;y<MAP_SIZE_Y;y++) {
         for (x=0;x<MAP_SIZE_X;x++) {
-            if (map->color[x][y]==0)
+            if (map->color[x][y]==COLOR_NULL)
                 spread(map,x,y,map->ground[x][y],nextcolor(map));
         }
                 display(map);
     }
+    return 0;
 }
 
 int nextcolor(struct s_map *map) {
-    map->next_color=(map->next_color-29)%8+30;
+    map->next_color=(map->next_color-29)%7+30;
     return map->next_color;
 }
 
@@ -74,7 +75,7 @@ int spread(struct s_map *map,int x, int y, int ground, int color) {
     if ( (x<0) || (x>=MAP_SIZE_X) || (y<0) || (y>=MAP_SIZE_Y) ) 
         return 0;
 
-    if (map->color[x][y]!=0)
+    if (map->color[x][y]!=COLOR_NULL)
         return 0;
 
     if ( ground != map->ground[x][y])
