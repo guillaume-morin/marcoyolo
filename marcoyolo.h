@@ -6,7 +6,7 @@
 
 #define MAP_SIZE_X 60
 #define MAP_SIZE_Y 20
-#define T_PAUSE 100000000L
+#define T_PAUSE 200000000L
 
 #include <stdio.h>
 #include <stdlib.h>
