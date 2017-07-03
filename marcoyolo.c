@@ -31,6 +31,7 @@ int init(struct s_map *map) {
 int display(struct s_map *map) {
     int x,y;
     char color[16];
+    char ground;
     struct timespec pause;
 
     pause.tv_sec = 0;
@@ -39,8 +40,12 @@ int display(struct s_map *map) {
     printf("\e[1;1H\e[2J");
     for (y=0;y<MAP_SIZE_Y;y++) {
         for (x=0;x<MAP_SIZE_X;x++) {
+            if ( map->ground[x][y] == 0 ) 
+                ground='~';
+            else
+                ground='o';
             sprintf(color,"\x1B[%im",map->color[x][y]);
-            printf("%s%i",color,map->ground[x][y]);
+            printf("%s%c",color,ground);
         }
         printf("\n");
     }
