@@ -10,9 +10,15 @@ int main (int argc, char** argv) {
 	}
 
     map=malloc((MAP_SIZE_X*MAP_SIZE_Y*2+1)*sizeof(int));
+    if (!map) {
+        printf("Error : Cannot allocate memory\n");
+        return 2;
+    }
+
     init(map);
     display(map);
     browse(map);
+
     return 0;
 }
 
