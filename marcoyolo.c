@@ -20,7 +20,7 @@ int init(struct s_map *map) {
     int x,y;
     for (x=0;x<MAP_SIZE_X;x++) {
         for (y=0;y<MAP_SIZE_Y;y++) {
-            map->ground[x][y]=rand()%3;
+            map->ground[x][y]=rand()%2;
             map->color[x][y]=COLOR_NULL;
         }
     }
@@ -57,7 +57,7 @@ int browse(struct s_map *map) {
     int x,y;
     for (y=0;y<MAP_SIZE_Y;y++) {
         for (x=0;x<MAP_SIZE_X;x++) {
-            if (map->color[x][y]==COLOR_NULL)
+            if ( (map->color[x][y]==COLOR_NULL) && (map->ground[x][y] != 0) )
                 spread(map,x,y,map->ground[x][y],nextcolor(map));
         }
                 display(map);
@@ -78,9 +78,8 @@ int spread(struct s_map *map,int x, int y, int ground, int color) {
     if (map->color[x][y]!=COLOR_NULL)
         return 0;
 
-    if ( ground != map->ground[x][y])
+    if ( map->ground[x][y] != ground )
         return 0;
-
 
     map->color[x][y]=color;
 
