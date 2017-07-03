@@ -18,6 +18,7 @@ int main (int argc, char** argv) {
 
 int init(struct s_map *map) {
     int x,y;
+    srand ( time(NULL) );
     for (x=0;x<MAP_SIZE_X;x++) {
         for (y=0;y<MAP_SIZE_Y;y++) {
             map->ground[x][y]=rand()%2;
