@@ -1,147 +1,99 @@
 #include "marcoyolo.h"
 
 int main (int argc, char** argv) {
-    int* matrix;
-    int s_rows,s_cols;
 
-    if (argc<3) {
-        printf("Not enough parameters.\nUsage : %s s_rows n_columns\n", argv[0]);
+    struct s_map *map;
+
+    if (argc>1) {
+        printf("Too much parameters.\nUsage : %s\n", argv[0]);
         return 1;
 	}
 
-    s_rows=atoi(argv[1]);
-    s_cols=atoi(argv[2]);
-
-    matrix=calloc(2*s_rows*s_cols,sizeof(int));
-
-    display(matrix,s_rows,s_cols); 
-    initialize(matrix,s_rows,s_cols);
-    display(matrix,s_rows,s_cols); 
-
-    /* Actual exercise */
-    browse(matrix,s_rows,s_cols); 
-
-    destroy(matrix);
-
+    map=malloc((MAP_SIZE_X*MAP_SIZE_Y*2+1)*sizeof(int));
+    init(map);
+    display(map);
+    browse(map);
     return 0;
 }
 
-int initialize (int* matrix, int s_rows, int s_cols) {
-    int x;   
-
-    for (x=0;x<=s_rows*s_cols;x++) {
-        /*display(matrix,s_rows,s_cols); */
-        matrix[x*2]=rand()%2;
-        matrix[x*2+1]=0;
+int init(struct s_map *map) {
+    int x,y;
+    for (x=0;x<MAP_SIZE_X;x++) {
+        for (y=0;y<MAP_SIZE_Y;y++) {
+            map->ground[x][y]=rand()%3;
+            map->color[x][y]=COLOR_NULL;
+        }
     }
-    
-    return 0; 
+    map->next_color=30;
+    return 0;
 }
 
-int display(int* matrix, int s_rows, int s_cols) {
+int display(struct s_map *map) {
     int x,y;
     char color[16];
     struct timespec pause;
 
     pause.tv_sec = 0;
-    pause.tv_nsec = T_PAUSE;     
+    pause.tv_nsec = T_PAUSE;  
 
     printf("\e[1;1H\e[2J");
-    for (y=0;y<(s_cols-1);y++) {
-        for (x=0;x<(s_rows-1);x++) {
-            sprintf(color,"\x1B[%im",matrix[2*(x+y*s_rows)+1]);
-            printf("%s%i",color,matrix[2*(x+y*s_rows)]);
+    for (y=0;y<MAP_SIZE_Y;y++) {
+        for (x=0;x<MAP_SIZE_X;x++) {
+            sprintf(color,"\x1B[%im",map->color[x][y]);
+            printf("%s%i",color,map->ground[x][y]);
         }
         printf("\n");
     }
 
     if (nanosleep(&pause,NULL) < 0) {
         printf("Error : syscall nanosleep failed.\n");
-        abort;
+        exit(1);
     }
 
     return 0;
 }
 
-int destroy(int* matrix) {
-
-    free(matrix);
-
-    return 0;
-}
-
-int browse(int* matrix, int s_rows, int s_cols) {
+int browse(struct s_map *map) {
     int x,y;
-    int newcolor=1;
-
-    for (y=0;y<=(s_cols-1);y++) {
-        for (x=0;x<=(s_rows-1);x++) {
-            if ( matrix[2*(x+y*s_rows)+1] == 0 ) {
-                matrix[2*(x+y*s_rows)+1] = newcolor+30;
-                spread(matrix,s_rows,s_cols,x,y);
-                display(matrix,s_rows,s_cols);
-                newcolor=(newcolor+1)%8;
-            }
+    for (y=0;y<MAP_SIZE_Y;y++) {
+        for (x=0;x<MAP_SIZE_X;x++) {
+            if (map->color[x][y]==COLOR_NULL)
+                spread(map,x,y,map->ground[x][y],nextcolor(map));
         }
+                display(map);
     }
-
     return 0;
 }
 
-int spread(int* matrix, int s_rows, int s_cols, int source_x, int source_y) {
-    int x,y,left_x,left_y,right_x,right_y;
+int nextcolor(struct s_map *map) {
+    map->next_color=(map->next_color-29)%7+30;
+    return map->next_color;
+}
 
-    left_x=source_x-1;
-    if ( left_x < 0 )
-        left_x=source_x;
+int spread(struct s_map *map,int x, int y, int ground, int color) {
 
-    left_y=source_y-1;
-    if ( left_y < 0 )
-        left_y=source_y;
+    if ( (x<0) || (x>=MAP_SIZE_X) || (y<0) || (y>=MAP_SIZE_Y) ) 
+        return 0;
 
-    right_x=source_x+1;
-    if (right_x>=s_rows-1)
-        right_x=source_x;
+    if (map->color[x][y]!=COLOR_NULL)
+        return 0;
 
-    right_y=source_y+1;
-    if (right_y>=s_cols-1)
-        right_y=source_y;
+    if ( ground != map->ground[x][y])
+        return 0;
 
 
-    display(matrix,s_rows,s_cols);
+    map->color[x][y]=color;
 
-    /* Vertical & horizontal spreading only */
-    x=source_x;
-    for (y=left_y;y<=right_y;y++) {
-        if ( ( matrix[2*(x+y*s_rows)+1] == 0 ) &&
-           ( matrix[2*(x+y*s_rows)] == matrix[2*(source_x+source_y*s_rows)] ) ) {
-            matrix[2*(x+y*s_rows)+1] = matrix[2*(source_x+source_y*s_rows)+1];
-            spread(matrix,s_rows,s_cols,x,y); 
-        }
-    }
+    spread(map,x-1,y,ground,color);
+    spread(map,x+1,y,ground,color);
+    spread(map,x,y-1,ground,color);
+    spread(map,x,y+1,ground,color);
 
-    y=source_y;
-    for (x=left_x-1;x<=right_x;x++) {
-        if ( ( matrix[2*(x+y*s_rows)+1] == 0 ) &&
-           ( matrix[2*(x+y*s_rows)] == matrix[2*(source_x+source_y*s_rows)] ) ) {
-            matrix[2*(x+y*s_rows)+1] = matrix[2*(source_x+source_y*s_rows)+1];
-            spread(matrix,s_rows,s_cols,x,y); 
-        }
-    }
-
-    /* Vertical & horizontal & diagonal spreading */
-    /*for (y=left_y;y<=right_y;y++) {
-        for (x=left_x-1;x<=right_x;x++) {
-            if ( ( matrix[2*(x+y*s_rows)+1] == 0 ) &&
-                 ( matrix[2*(x+y*s_rows)] == matrix[2*(source_x+source_y*s_rows)] ) ) {
-                matrix[2*(x+y*s_rows)+1] = matrix[2*(source_x+source_y*s_rows)+1];
-                spread(matrix,s_rows,s_cols,x,y); 
-            }
-        }
-    }*/
+    spread(map,x-1,y-1,ground,color);
+    spread(map,x-1,y+1,ground,color);
+    spread(map,x+1,y-1,ground,color);
+    spread(map,x+1,y+1,ground,color);
 
     return 0;
 }
-
-
 

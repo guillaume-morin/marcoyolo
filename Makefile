@@ -4,7 +4,7 @@ marcoyolo: marcoyolo.c marcoyolo.h
 	gcc --std=c99 -ansi -pedantic -Wall -g -o marcoyolo marcoyolo.c
 
 run: marcoyolo
-	./marcoyolo 60 20
+	./marcoyolo
 
 clean:
 	rm -f marcoyolo
