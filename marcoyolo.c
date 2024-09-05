@@ -5,7 +5,7 @@ int main (int argc, char** argv) {
     struct s_map *map;
 
     if (argc>1) {
-        printf("Too much parameters.\nUsage : %s\n", argv[0]);
+        printf("Too many parameters.\nUsage : %s\n", argv[0]);
         return 1;
 	}
 
